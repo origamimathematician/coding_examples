@@ -2,7 +2,21 @@
 """
 Created on Tue Mar 05 19:27:31 2013
 
-@author: Nathan Sponberg
+Updated version Thur May 01 15:44:00 2014
+Author: Nathan Sponberg
+Description:     Main driver class for the granular materials simulation.
+                 This is what runs the simulation and the animation.
+            Functions:
+            
+
+"""
+
+"""
+Things to do:
+   * neighborUpdateInterval used for what?
+   * data array junk variable, nessacary?
+   * count is global, can we fix this?
+   * make it so we change particle radius
 """
 
 from Integrate import Verlet
@@ -19,22 +33,25 @@ debug_here = Tracer()
 
 ##########################
 ####Initial Conditions####
-END_TIME = 1.
-t = 0.
-dt = 0.010
-initConditions = "square_lattice"
-num_frames = 100
-frameSkip = 1
-neighborUpdateInterval = 1
+#END_TIME = 1. #?????????????????????
+
+t = 0. # start time
+dt = 0.015 ### Time delta for each integration step
+           ### Max at 0.015, speeds up simulation speed, but if time
+           ### are too large then to much information is lost.
+initConditions = "square_lattice" #used for molecular dynamics
+num_frames = 100 #????????????????????????
+frameSkip = 3 # number of frames to skip per animation cycle
+neighborUpdateInterval = 1 # check this
 data = array([0,0]) #junk variable, let in so as not to break code
-count = 0
-rad = (2.**(1./6.))/2.
-Lx = 27./sqrt(3)
-Ly = 20.
+count = 0 # frame count 
+rad = (2.**(1./6.))/2. # particle radius, not yet variable
+Lx = 27./sqrt(3)   # width of container
+Ly = 20.    # height of container
 
 floorSize = 18
-wallSize = 3
-slantSize = 10
+#wallSize = 3
+#slantSize = 10
 
 ###Use Radians!!!
 slantStart = 20.
@@ -45,47 +62,47 @@ gamma = 20
 
 num_rows = 6
 
-container = Container(floorSize,wallSize,slantSize,Lx,Ly)
+container = Container(floorSize,Lx,Ly)
 dist = container.Lx / 5.
 vel = dist /5.
 animate = True
 iterationTimed = 1450
 cutOff = 1.*(2*rad)
 #########################
-"""
-for i in range(floorSize):
-    container.addParticle((i*2*(rad) + rad/2, 1.,0.,
-                          0.,0.,0.,
-                          0.,0.,0.),
-                          1.)
+#
+#for i in range(floorSize):
+#    container.addParticle((i*2*(rad) + rad/2, 1.,0.,
+#                          0.,0.,0.,
+#                          0.,0.,0.),
+#                          1.)
 
-for i in range(wallSize):
-    container.addParticle((rad/2, 1.+(2*rad*(i+1)),0.,
-                          0.,0.,0.,
-                          0.,0.,0.),
-                          1.)
-for i in range(wallSize):
-    container.addParticle((rad/2 + (floorSize-1)*2*rad, 1.+(2*rad*(i+1)),0.,
-                          0.,0.,0.,
-                          0.,0.,0.),
-                          1.)
-"""
-'''                        
-for i in range(slantSize):
-    container.addParticle((rad/2 +(i*slantMultiplierX), slantStart-(i*slantMultiplierY),0.,
-                          0.,0.,0.,
-                          0.,0.,0.),
-                          1.)
-for i in range(slantSize):
-    container.addParticle((rad/2 -(i*slantMultiplierX)+(floorSize-6)*2*rad, slantStart-(i*slantMultiplierY),0.,
-                          0.,0.,0.,
-                          0.,0.,0.),
-                          1.)
-    #if i == (slantSize - 1):
-        ####this doesn't work right now
-        #container.openingWidth = container.xpos[-1] - container.xpos[-2]
-        ################
-'''
+#for i in range(wallSize):
+#    container.addParticle((rad/2, 1.+(2*rad*(i+1)),0.,
+#                          0.,0.,0.,
+#                          0.,0.,0.),
+#                          1.)
+#for i in range(wallSize):
+#    container.addParticle((rad/2 + (floorSize-1)*2*rad, 1.+(2*rad*(i+1)),0.,
+#                          0.,0.,0.,
+#                          0.,0.,0.),
+#                          1.)
+#
+#                        
+#for i in range(slantSize):
+#    container.addParticle((rad/2 +(i*slantMultiplierX), slantStart-(i*slantMultiplierY),0.,
+#                          0.,0.,0.,
+#                          0.,0.,0.),
+#                          1.)
+#for i in range(slantSize):
+#    container.addParticle((rad/2 -(i*slantMultiplierX)+(floorSize-6)*2*rad, slantStart-(i*slantMultiplierY),0.,
+#                          0.,0.,0.,
+#                          0.,0.,0.),
+#                          1.)
+#    #if i == (slantSize - 1):
+#        ####this doesn't work right now
+#        #container.openingWidth = container.xpos[-1] - container.xpos[-2]
+#        ################
+#
 container.openingPosition = 8
 
 

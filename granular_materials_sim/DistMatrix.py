@@ -1,6 +1,7 @@
 
 from numpy import size,tile,sqrt,where
 from numpy import ma
+from scipy.spatial.distance import pdist,squareform
 from pylab import find
 from IPython.core.debugger import Tracer
 debug_here = Tracer()
@@ -8,7 +9,9 @@ debug_here = Tracer()
 class DistMatrix(object):
     def __init__(self):
         pass
-
+    
+    ### input: upto three length n lists of position data
+    ###        one for each dimension 
     def CalcDist(self, x, y=[], z=[]):
         tilex = tile(x , (size(x),1))
         distx = tilex.T - tilex
@@ -17,6 +20,13 @@ class DistMatrix(object):
         tilez = tile(z , (size(z),1))
         distz = tilez.T - tilez
         return distx, disty, distz
+        ### output: upto three nXn distance matrices, one
+        ###         one for each dim. They are symetric
+        ###         with zeros as diagonal entries.
+        
+#    def CalcDist(self, x, y=[], z=[]):
+#        
+#        return distx, disty, distz
 
     def UpdatePBoundries(self, vector, domain):
         xupdateBoundries = vector

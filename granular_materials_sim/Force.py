@@ -78,6 +78,14 @@ class LennardJonesNeighbors(object):
             #debug_here()
         return xacl, yacl, zacl
         
+###################################################################
+#
+# Force object for calculating interactions between granular particles.
+# Used for granular materials simulation.
+# Notes on granular materials and related formulas can be found here:
+# http://wiki.cs.umt.edu/classes/cs477/index.php/Project_II:_Granular_Materials
+#
+###################################################################
 class GranularForces(object):
     def __init__(self, sigma = 1., epsilon = 1., gamma = 30.):
         self.sigma = sigma
@@ -86,8 +94,8 @@ class GranularForces(object):
         pass    
     
     def __call__(self, container):
-        self.c = container
-        distCalc = Neighbors()
+        self.c = container # particle container
+        distCalc = Neighbors() 
         #distCalc.UpdateNeighbors(self.c,2**(1/6))
         xacl = zeros(self.c.numParticles)
         yacl = zeros(self.c.numParticles)

@@ -1,35 +1,66 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Mar 02 15:14:08 2013
+Updated version Thur May 01 15:03:00 2014
+Author: Nathan Sponberg
+Description:     a container class that holds a number particles that interact
+                 with one another. 
+                 Notes on molecular interaction and formulas can be found here:
+                 http://wiki.cs.umt.edu/classes/cs477/index.php/Molecular_Dynamics_Notes
+                 
+                 Notes on granular materials can be found here:
+                 http://wiki.cs.umt.edu/classes/cs477/index.php/Project_II:_Granular_Materials       
+        
+            Functions:
+            
 
-@author: Nathan Sponberg
+"""
+
+"""
+Things to do:
+    *Resolve how masses are implemented and used
+    *Resolve third dimension
+    *Setting initial conditions?
+    *Variables from line 77-84, still used?
 """
 import csv
 from numpy import array, hstack, size, tile, ones
 
 class Container(object):
-    def __init__(self, floorSize, wallSize, slantSize, xdim, ydim, zdim = 0, springEqDist = 2.*2.**(1./6.)):
+    def __init__(self, floorSize, xdim, ydim, zdim = 0, springEqDist = 2.*2.**(1./6.)):
         self.floorSize = floorSize
-        self.wallSize = wallSize
-        self.slantSize = slantSize
+        #self.wallSize = wallSize
+        #self.slantSize = slantSize
         self.Lx = xdim
         self.Ly = ydim
-        self.Lz = zdim
-        self.springEqDist = springEqDist #equilibrium distance between lattice particles
-        self.initDragPos = 0. #initial position of right most lattice particle
+        self.Lz = zdim #set to zero by default for 2-D sims
+        
+        #equilibrium distance between lattice particles, used for "spring"
+        #forces
+        self.springEqDist = springEqDist 
+
+        #initial position of right most lattice particle
+        # used for molecular friction sim. Not used for this simulation
+        self.initDragPos = 0. 
+        
         ###postions
         self.xpos = array([],dtype='float64')
         self.ypos = array([],dtype='float64')
         self.zpos = array([],dtype='float64')
+
         ###velocities
         self.xvel = array([],dtype='float64')
         self.yvel = array([],dtype='float64')
         self.zvel = array([],dtype='float64')
+
         ###accelerations
         self.xacl = array([],dtype='float64')
         self.yacl = array([],dtype='float64')
         self.zacl = array([],dtype='float64')
+        
         ###initial system conditions, used to reset container for multiple simulations
+        
+        ### Do I need this???????????????????????
         self.xposinit = array([],dtype='float64')
         self.yposinit = array([],dtype='float64')
         self.zposinit = array([],dtype='float64')
@@ -39,10 +70,15 @@ class Container(object):
         self.xaclinit = array([],dtype='float64')
         self.yaclinit = array([],dtype='float64')
         self.zaclinit = array([],dtype='float64')
+
         ###masses
+        
+        ###Is this still used?????????????????????
         self.massVector = array([],dtype='float64')
         self.numParticles = 0
+
         ###empty variable used later
+        ###Is this still used?????????????????????
         self.adjMatrix = array([],dtype='bool')
         self.dragForce = []
         self.maxDragForces = []
@@ -81,10 +117,11 @@ class Container(object):
         return massMatrix
 
     ###sets adjacency martix for particle lattice, used to compute which particles
-    ###have stiff springs connecting them
+    ###have stiff springs connecting them. Used for molecular dynamics simulation.
     def setAdjacency(self): 
         self.initDragPos = self.xpos[-1]
         self.adjMatrix = ones((self.numParticles,self.numParticles), dtype = bool)
+        
         ###the order in which lattice particles are added (see driver class) means that for a given
         ###paticle in the lattice is connected by springs to the two particles that
         ###are before it and after it in the index list. This is always the case except
@@ -133,6 +170,7 @@ class Container(object):
         print self.xpos
         print self.ypos
         print self.zpos
+        
     ##reset container to initial conditions of all particles, useful for multiple
     ##simulations on one container
     def reset(self):
