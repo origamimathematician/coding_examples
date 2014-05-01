@@ -1,0 +1,10 @@
+This is a simplified simulation of the mechanics of granular materials in
+an hourglass. It is a two dimensional simulation and currently does not
+implement rotaional forces (hence it is a simplified model). Much of the 
+current implementation is setup to include force calculations in a third 
+dimesion. A 3-D simulation could easily be implimented in the future given
+a good visualization package. 
+
+Note: current version needs to be cleaned up and commented. Gains in
+efficency are probably possible as well. In particular, the pariwise
+distance calculations of particles in the system could probably be improved.
