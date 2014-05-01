@@ -1,0 +1,4 @@
+This is a python program that is a simple simulation of a police database of criminals and criminal infractions. It is completely automated
+and all data and timestamps are generated randomly. It was created to demostrate the use of random number generation in python and as a simple
+use case of a binary search tree data structure. Please note that bst.py is NOT mine. It was implemented by Brad Miller for use with the 
+"Introduction to Data and Algorithms in Python". I used it as part of class project.
