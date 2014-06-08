@@ -16,13 +16,12 @@ Description:     a container class that holds a number particles that interact
 
 """
 
-"""
-Things to do:
-    *Resolve how masses are implemented and used
-    *Resolve third dimension
-    *Setting initial conditions?
-    *Variables from line 77-84, still used?
-"""
+
+#Things to do:
+#    *Resolve how masses are implemented and used
+#    *Adjust how inital conditions are track when adding particles
+#    *Variables from line 77-84, still used?
+
 import csv
 from numpy import array, hstack, size, tile, ones
 
@@ -36,24 +35,26 @@ class Container(object):
         self.Lz = zdim #set to zero by default for 2-D sims
         
         #equilibrium distance between lattice particles, used for "spring"
-        #forces
+        #forces in partical lattice (molecular friction)
         self.springEqDist = springEqDist 
 
         #initial position of right most lattice particle
         # used for molecular friction sim. Not used for this simulation
         self.initDragPos = 0. 
         
-        ###postions
+        ###postions, list of coordinates for particles in the system.
+        ### First values in each list represent coordinates of first particle etc.
         self.xpos = array([],dtype='float64')
         self.ypos = array([],dtype='float64')
         self.zpos = array([],dtype='float64')
 
-        ###velocities
+        ###velocities, similar to above
         self.xvel = array([],dtype='float64')
         self.yvel = array([],dtype='float64')
         self.zvel = array([],dtype='float64')
 
-        ###accelerations
+        ###accelerations, this is needed for certain integration algorithms, lots of stuff
+        ### to track :P
         self.xacl = array([],dtype='float64')
         self.yacl = array([],dtype='float64')
         self.zacl = array([],dtype='float64')
@@ -99,6 +100,10 @@ class Container(object):
         self.xacl = hstack((self.xacl, initState[6]))
         self.yacl = hstack((self.yacl, initState[7]))
         self.zacl = hstack((self.zacl, initState[8]))
+        
+        ###Setting initial state like this could cause problems in the furture if particles are added after 
+        ### simulation is started. Should be fixed at some point, but does not 
+        ### break program at this point
         self.xposinit = self.xpos
         self.yposinit = self.ypos
         self.zposinit = self.zpos
@@ -117,7 +122,7 @@ class Container(object):
         return massMatrix
 
     ###sets adjacency martix for particle lattice, used to compute which particles
-    ###have stiff springs connecting them. Used for molecular dynamics simulation.
+    ###have stiff springs connecting them. Used for molecular friction simulation.
     def setAdjacency(self): 
         self.initDragPos = self.xpos[-1]
         self.adjMatrix = ones((self.numParticles,self.numParticles), dtype = bool)

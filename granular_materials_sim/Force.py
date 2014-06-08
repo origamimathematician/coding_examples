@@ -32,7 +32,7 @@ class LennardJonesForce(object):
         disty = distCalc.CheckDist(disty, self.c.Ly)
         distz = distCalc.CheckDist(distz, self.c.Lz)
         #debug_here()
-        distCalc.UpdateNeighbors(self.c)
+        distCalc.UpdateNeighbors(self.c,calcz = False)
         masses = self.c.massVector
         distr = ma.masked_array(sqrt(distx**2 + disty**2 + distz**2),
                                 [distx**2 + disty**2 + distz**2 == 0])
@@ -103,12 +103,21 @@ class GranularForces(object):
         masses = self.c.massVector
         #print self.c.neighborList[-1]
         for particle in range(self.c.numParticles):
+        
+            ###Used to determine particle flux through funnel opening for each iteration
             if self.c.ypos[particle] <= self.c.openingPosition and self.c.ypos[particle] >= (self.c.openingPosition - 2):
                 self.c.particleFlux[self.c.integrationIteration] += 1
+            
+            
             neighbors = self.c.neighborList[particle]
+            
+            ### Calculate distances !!!!!!!!Check to see if z dimension is used!!!!!!!!!!! should improve performace.
             distx, disty, distz, distr, relVelx, relVely, relVelz = distCalc.NeighborDist(particle, 
                                                                neighbors, 
                                                                self.c)                
+                                                               
+            ### These are the force calculations for particle interactions. This gives us the
+            ### gradient along the radial direction between particles, hence distr is used.
             K1 = (ma.divide(self.sigma,distr).filled(0.))**12
             K2 = (ma.divide(self.sigma,distr).filled(0.))**6
             K3 = 2*K1 - K2

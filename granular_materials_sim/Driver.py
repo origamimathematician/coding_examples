@@ -6,9 +6,6 @@ Updated version Thur May 01 15:44:00 2014
 Author: Nathan Sponberg
 Description:     Main driver class for the granular materials simulation.
                  This is what runs the simulation and the animation.
-            Functions:
-            
-
 """
 
 """
@@ -41,7 +38,7 @@ dt = 0.015 ### Time delta for each integration step
            ### are too large then to much information is lost.
 initConditions = "square_lattice" #used for molecular dynamics
 num_frames = 100 #????????????????????????
-frameSkip = 3 # number of frames to skip per animation cycle
+frameSkip = 1 # number of frames to skip per animation cycle
 neighborUpdateInterval = 1 # check this
 data = array([0,0]) #junk variable, let in so as not to break code
 count = 0 # frame count 
@@ -65,6 +62,7 @@ num_rows = 6
 container = Container(floorSize,Lx,Ly)
 dist = container.Lx / 5.
 vel = dist /5.
+useImpvDist = False
 animate = True
 iterationTimed = 1450
 cutOff = 1.*(2*rad)
@@ -127,8 +125,10 @@ force = GranularForces(gamma=gamma)
 integrator = Verlet(dt)
 
 setNeighbors = Neighbors()
-setNeighbors.UpdateNeighbors(container, cutOff)
-    
+if useImpvDist:
+    setNeighbors.UpdateNeighborsImpv(container,False, cutOff)
+else:
+    setNeighbors.UpdateNeighbors(container,False, cutOff)
 
 if animate == True:
 
@@ -170,7 +170,10 @@ if animate == True:
 	  if i % 100 == 0:
 	    print "frame: {}".format(count)
           if count%neighborUpdateInterval == 0:
-              setNeighbors.UpdateNeighbors(container, cutOff)
+              if useImpvDist:
+                setNeighbors.UpdateNeighborsImpv(container,False,cutOff)
+              else:
+                setNeighbors.UpdateNeighbors(container,False,cutOff)
           integrator(force,container)
 	  if count % 200 == 0:
 	    title("Frame: {}".format(count))
@@ -190,7 +193,10 @@ else:
     bridge_height_estimate = zeros((iterationTimed,10))
     for i in range(iterationTimed):    
         #if i%neighborUpdateInterval == 0:
-	setNeighbors.UpdateNeighbors(container,cutOff)
+        if useImpvDist:
+            setNeighbors.UpdateNeighborsImpv(container,False,cutOff)
+        else:
+            setNeighbors.UpdateNeighbors(container,False,cutOff)
         integrator(force,container)
 	xslice_acc = []
 	yslice_acc = []
