@@ -32,6 +32,9 @@ class Wall(object):
         self.c = c
         self.endpointsX = endpoints[0:2]
         self.endpointsY = endpoints[2:4]
+        self.isHor = False
+        if self.endpointsY[0] == self.endpointsY[1]:
+            self.isHor = True
     
     def wallDist(self,x,y):
         distFromWall = abs(self.a*x+self.b*y+self.c)/ (sqrt(self.a**2+self.b**2))

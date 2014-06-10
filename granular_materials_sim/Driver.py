@@ -60,7 +60,7 @@ slantMultiplierY = 2*rad*sin(slantDegree)
 #values that represent a wall in the container using the standard
 # line equation ax+by+c = 0. Here the syntax of the list should be
 #   [a,b,c,(x-coordinate endpoints , y-coordinate endpoints) smallest to largest ]
-wallList = [[-1*sqrt(3),-1,20.,(0,10/sqrt(3),10,20)],[sqrt(3),-1,-7.,(17/sqrt(3),15.5,10,20)],[0.,1.,0.,(-20,35.5,0,0)]]
+wallList = [[-1*sqrt(3),-1,20.,(0,10/sqrt(3),10,20)],[sqrt(3),-1,-7.,(17/sqrt(3),15.5,10,20)],[0.,1.,0.,(-20,35.5,0,0)],[sqrt(3),-1,0.,(0,10/sqrt(3),0,10)]]
 
 gamma = 20
 
@@ -153,6 +153,7 @@ if animate == True:
     ax.set_ylim((0,container.Ly))
     ax.plot([0,10/sqrt(3)],[20,10],'b-')
     ax.plot([17/sqrt(3),27/sqrt(3)],[10,20],'b-')
+    ax.plot([0,10/sqrt(3)],[0,10],'b-')
     
     def prettify_circle(e):
       color="lightsteelblue"
