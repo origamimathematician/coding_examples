@@ -23,7 +23,25 @@ Description:     a container class that holds a number particles that interact
 #    *Variables from line 77-84, still used?
 
 import csv
-from numpy import array, hstack, size, tile, ones
+from numpy import array, hstack, size, tile, ones, sqrt
+
+class Wall(object):
+    def __init__(self,a,b,c,endpoints):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.endpointsX = endpoints[0:2]
+        self.endpointsY = endpoints[2:4]
+    
+    def wallDist(self,x,y):
+        distFromWall = abs(self.a*x+self.b*y+self.c)/ (sqrt(self.a**2+self.b**2))
+        xdist = 0.
+        ydist = 0.
+        if self.a != 0:        
+            xdist = (self.a*x + self.b*y +self.c)/self.a
+        if self.b != 0:
+            ydist = (self.a*x + self.b*y +self.c)/self.b        
+        return distFromWall, xdist, ydist
 
 class Container(object):
     def __init__(self, floorSize, xdim, ydim, zdim = 0, springEqDist = 2.*2.**(1./6.)):
@@ -33,6 +51,7 @@ class Container(object):
         self.Lx = xdim
         self.Ly = ydim
         self.Lz = zdim #set to zero by default for 2-D sims
+        self.wallList = []  #stores all wall objects in the simulation area
         
         #equilibrium distance between lattice particles, used for "spring"
         #forces in partical lattice (molecular friction)
@@ -115,6 +134,10 @@ class Container(object):
         self.zaclinit = self.zacl
 
         self.massVector = hstack((self.massVector, mass))
+        
+    def addWall(self,a,b,c,endpoints):
+        newWall = Wall(a,b,c,endpoints)
+        self.wallList.append(newWall)
 
     def getMassMatrix(self): ###not used any more, possibly useful in the future
         massMatrix = tile(self.massVector, (size(self.massVector),1))
@@ -203,3 +226,10 @@ def InitalizeContainer(self,filename):
           state = [float(i) for i in row]
           container.addParticle(state[0:-1],state[-1])
       return container
+
+def main():
+    testWall = Wall(1,2,3,[3,4,5,6])
+    print(testWall.wallDist(3,6))
+    
+if __name__ == "__main__":
+    main()

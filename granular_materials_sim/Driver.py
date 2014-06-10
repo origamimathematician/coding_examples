@@ -25,6 +25,7 @@ from matplotlib import animation
 from pylab import * # for plotting commands
 from time import time
 from scipy import sin,cos,pi
+#from numpy import sqrt
 from IPython.core.debugger import Tracer
 debug_here = Tracer()
 
@@ -38,7 +39,7 @@ dt = 0.015 ### Time delta for each integration step
            ### are too large then to much information is lost.
 initConditions = "square_lattice" #used for molecular dynamics
 num_frames = 100 #????????????????????????
-frameSkip = 1 # number of frames to skip per animation cycle
+frameSkip = 3 # number of frames to skip per animation cycle
 neighborUpdateInterval = 1 # check this
 data = array([0,0]) #junk variable, let in so as not to break code
 count = 0 # frame count 
@@ -55,11 +56,23 @@ slantStart = 20.
 slantDegree = pi/3.1
 slantMultiplierX = 2*rad*cos(slantDegree)
 slantMultiplierY = 2*rad*sin(slantDegree)
+
+#values that represent a wall in the container using the standard
+# line equation ax+by+c = 0. Here the syntax of the list should be
+#   [a,b,c,(x-coordinate endpoints , y-coordinate endpoints) smallest to largest ]
+wallList = [[-1*sqrt(3),-1,20.,(0,10/sqrt(3),10,20)],[sqrt(3),-1,-7.,(17/sqrt(3),15.5,10,20)],[0.,1.,0.,(-20,35.5,0,0)]]
+
 gamma = 20
 
 num_rows = 6
-
+#debug_here()
 container = Container(floorSize,Lx,Ly)
+
+for wall in wallList:
+    container.addWall(wall[0],wall[1],wall[2],wall[3])
+    
+#degub_here()
+    
 dist = container.Lx / 5.
 vel = dist /5.
 useImpvDist = False

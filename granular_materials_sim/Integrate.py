@@ -22,11 +22,11 @@ class Verlet(Integrate):
         f = function
         boundryCalc = DistMatrix()
         #boundryCalc.UpdateNeighbors(c, 2**(1/6))
-        '''
-        boundryCalc.UpdatePBoundries(c.xpos, c.Lx)
-        boundryCalc.UpdatePBoundries(c.ypos, c.Ly)
-        boundryCalc.UpdatePBoundries(c.zpos, c.Lz)
-        '''
+#        '''
+#        boundryCalc.UpdatePBoundries(c.xpos, c.Lx)
+#        boundryCalc.UpdatePBoundries(c.ypos, c.Ly)
+#        boundryCalc.UpdatePBoundries(c.zpos, c.Lz)
+#        '''
         c.particleFlux.append(0)
         c.xpos = c.xpos + c.xvel *self.dt + .5 * c.xacl * self.dt**2
         c.ypos = c.ypos + c.yvel *self.dt + .5 * c.yacl * self.dt**2
