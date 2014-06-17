@@ -87,23 +87,34 @@ class LennardJonesNeighbors(object):
 #
 ###################################################################
 class GranularForces(object):
-    def __init__(self, sigma = 1., epsilon = 1., gamma = 30.):
+    def __init__(self, sigma = 1., epsilon = 1., gamma = 5.):
+        self.FORCE_BOUND = 500
         self.sigma = sigma
         self.epsilon = epsilon
         self.gamma = gamma
+        self.forceTestX = 0
+        self.forceTestY = 0
         pass    
+    
+    def forceCalc(self,distance):
+        K1 = (self.sigma/distance)**12
+        K2 = (self.sigma/distance)**6
+        K3 = 2*K1 - K2
+        forceMag = 24*(self.epsilon/distance)*K3
+        return forceMag
     
     def wallCalc(self,wall,container,particle):
         distFromWall, xWall, yWall = wall.wallDist(container.xpos[particle],container.ypos[particle])
         wallAclX = 0
         wallAclY = 0
         #debug_here()
-        if distFromWall <= 2**(1/6):
+        if distFromWall <= (2**(1/6)):
             if (container.ypos[particle] >= wall.endpointsY[0] and container.ypos[particle] <= wall.endpointsY[1]) or wall.isHor:
-                K1 = (self.sigma/distFromWall)**12
-                K2 = (self.sigma/distFromWall)**6
-                K3 = 2*K1 - K2
-                wallMag = 24*(self.epsilon/distFromWall)*K3
+#                K1 = (self.sigma/distFromWall)**12
+#                K2 = (self.sigma/distFromWall)**6
+#                K3 = 2*K1 - K2
+#                wallMag = 24*(self.epsilon/distFromWall)*K3
+                wallMag = self.forceCalc(distFromWall)
                 displacement = array([xWall,yWall])
                 unitVector = displacement/(displacement**2)
                 nans = isnan(unitVector)
@@ -146,10 +157,7 @@ class GranularForces(object):
                                                                
             ### These are the force calculations for particle interactions. This gives us the
             ### gradient along the radial direction between particles, hence distr is used.
-            K1 = (ma.divide(self.sigma,distr).filled(0.))**12
-            K2 = (ma.divide(self.sigma,distr).filled(0.))**6
-            K3 = 2*K1 - K2
-            magnitude = 24*ma.divide(self.epsilon,distr)*K3
+            magnitude = self.forceCalc(distr)
             #debug_here()
             #rUnitVector = distr/norm()
             dampingForcex = zeros(len(neighbors))
@@ -169,143 +177,38 @@ class GranularForces(object):
                 dampingForcex[i] = forceVector[0]
                 dampingForcey[i] = forceVector[1]
                 dampingForcez[i] = forceVector[2]
-                #if len(self.c.neighborList[-1]) > 1 and particle == (self.c.numParticles - 1):
-                    #print displacement
-#                
-#                dampingForcex[i] = (self.gamma*dotProduct*unitVector * ma.divide(distx[i],distr[i])).filled(0.)
-#                dampingForcey[i] = (self.gamma*dotProduct*unitVector + ma.divide(disty[i],distr[i])).filled(0.)
-#                dampingForcez[i] = (self.gamma*dotProduct*unitVector + ma.divide(distz[i],distr[i])).filled(0.)
-#               
-            #debug_here()
-            
-#            xacl[particle] = sum(array((magnitude * ma.divide(distx,distr)).filled(0.)))/masses[particle]
-#            xacl[particle] += sum(dampingForcex)/masses[particle]
-##            xacl[particle] += wall1AclX
-##            xacl[particle] += wall2AclX
-##            xacl[particle] += wall3AclX
-#            yacl[particle] = sum(array((magnitude * ma.divide(disty,distr)).filled(0.)))/masses[particle]
-#            yacl[particle] += sum(dampingForcey)/masses[particle]
-##            yacl[particle] += wall1AclY
-##            yacl[particle] += wall2AclY
-##            yacl[particle] += wall3AclY
-#            zacl[particle] = sum(array((magnitude * ma.divide(distz,distr)).filled(0.)))/masses[particle]
-#            zacl[particle] += sum(dampingForcex)/masses[particle]
-#            yacl[particle] += -2.
+  
             wallAclX = 0
             wallAclY = 0
             for wall in self.c.wallList:
                 aclX,aclY = self.wallCalc(wall,self.c,particle)
+                if abs(aclX) > self.FORCE_BOUND:
+                    aclX = aclX/abs(aclX) * self.FORCE_BOUND
+                if abs(aclY) > self.FORCE_BOUND:
+                    aclY = aclY/abs(aclY) * self.FORCE_BOUND
                 wallAclX += aclX
                 wallAclY += aclY
+                mag = sqrt(aclX**2 + aclY**2)
+                if abs(wallAclX) > self.forceTestX or abs(wallAclY) > self.forceTestY:
+                    self.forceTestX = abs(wallAclX)
+                    self.forceTestY = abs(wallAclY)
+                    print("PING: " + str(self.forceTestX) + ", " + str(self.forceTestY))
                 
-#                distFromWall, xWall, yWall = wall.wallDist(self.c.xpos[particle],self.c.ypos[particle])
-#                wallAclX = 0
-#                wallAclY = 0
-#                debug_here()
-#                if distFromWall <= 2**(1/6) and self.c.ypos[particle] >= wall.endpointsY[0] and self.c.ypos[particle] <= wall.endpointsX[1]:
-#                    K1 = (self.sigma/distFromWall)**12
-#                    K2 = (self.sigma/distFromWall)**6
-#                    K3 = 2*K1 - K2
-#                    wallMag = 24*(self.epsilon/distFromWall)*K3
-#                    displacement = array([xWall,yWall])
-#                    unitVector = displacement/(displacement**2)
-#                    nans = isnan(unitVector)
-#                    unitVector[nans] = 0.
-#                    dotProduct = dot(displacement, (self.c.xvel[particle],self.c.yvel[particle]))
-#                    #debug_here()
-#                    forceVector = -1*self.gamma*dotProduct*unitVector
-#                    wallAclX = forceVector[0]
-#                    wallAclX += wallMag*(xWall/distFromWall)
-#                    wallAclY = forceVector[1]
-#                    wallAclY += wallMag*(yWall/distFromWall)
-#                              
-#                    xacl[particle] += wallAclX
-#                 
-#                    yacl[particle] += wallAclY
-                    #debug_here()
-                    
-                
-#            distFromWall1, xWall1, yWall1 = distCalc.lineDist(-1*sqrt(3),-1,20.,
-#                                                              self.c.xpos[particle], self.c.ypos[particle])
-#            distFromWall2, xWall2, yWall2 = distCalc.lineDist(sqrt(3),-1,-7.,
-#                                                              self.c.xpos[particle], self.c.ypos[particle])
-#            distFromWall3, xWall3, yWall3 = distCalc.lineDist(0,1,0,
-#                                                              self.c.xpos[particle], self.c.ypos[particle])
-#            wall1AclX = 0.
-#            wall1AclY = 0.
-#            wall2AclX = 0.
-#            wall2AclY = 0.
-#            wall3AclX = 0.
-#            wall3AclY = 0.
-#            
-#            if distFromWall1 <= 2**(1/6) and self.c.ypos[particle] >=10:
-#                K1 = (self.sigma/distFromWall1)**12
-#                K2 = (self.sigma/distFromWall1)**6
-#                K3 = 2*K1 - K2
-#                wallMag1 = 24*(self.epsilon/distFromWall1)*K3
-#                displacement1 = array([xWall1,yWall1])
-#                unitVector = displacement1/(displacement1**2)
-#                nans = isnan(unitVector)
-#                unitVector[nans] = 0.
-#                dotProduct = dot(displacement1, (self.c.xvel[particle],self.c.yvel[particle]))
-#                #debug_here()
-#                forceVector1 = -1*self.gamma*dotProduct*unitVector
-#                wall1AclX = forceVector1[0]
-#                wall1AclX += wallMag1*(xWall1/distFromWall1)
-#                wall1AclY = forceVector1[1]
-#                wall1AclY += wallMag1*(yWall1/distFromWall1)
-#            if distFromWall2 <= 2**(1/6) and self.c.ypos[particle] >=10:
-#                K1 = (self.sigma/distFromWall2)**12
-#                K2 = (self.sigma/distFromWall2)**6
-#                K3 = 2*K1 - K2
-#                wallMag2 = 24*(self.epsilon/distFromWall2)*K3
-#                displacement2 = array([xWall2,yWall2])
-#                unitVector = displacement2/(displacement2**2)
-#                nans = isnan(unitVector)
-#                unitVector[nans] = 0.
-#                dotProduct = dot(displacement2, (self.c.xvel[particle],self.c.yvel[particle]))
-#                #debug_here()
-#                forceVector2 = -1*self.gamma*dotProduct*unitVector
-#                wall2AclX = forceVector2[0]
-#                wall2AclX += wallMag2*(xWall2/distFromWall2)
-#                wall2AclY = forceVector2[1]
-#                wall2AclY += wallMag2*(yWall2/distFromWall2)
-#            if distFromWall3 <= 2**(1/6):
-#                K1 = (self.sigma/distFromWall3)**12
-#                K2 = (self.sigma/distFromWall3)**6
-#                K3 = 2*K1 - K2
-#                wallMag3 = 24*(self.epsilon/distFromWall3)*K3
-#                displacement3 = array([xWall3,yWall3])
-#                unitVector = displacement3/(displacement3**2)
-#                nans = isnan(unitVector)
-#                unitVector[nans] = 0.
-#                dotProduct = dot(displacement3, (self.c.xvel[particle],self.c.yvel[particle]))
-#                #debug_here()
-#                forceVector3 = -1*self.gamma*dotProduct*unitVector
-#                wall3AclX = forceVector3[0]
-#                wall3AclX += wallMag3*(xWall3/distFromWall3)
-#                wall3AclY = forceVector3[1]
-#                wall3AclY += wallMag3*(yWall3/distFromWall3)
+            accelerationX = sum(array((magnitude * ma.divide(distx,distr)).filled(0.)))/masses[particle] + sum(dampingForcex)/masses[particle] + wallAclX
+            accelerationY = sum(array((magnitude * ma.divide(disty,distr)).filled(0.)))/masses[particle] + sum(dampingForcey)/masses[particle] + wallAclY
             
-            xacl[particle] = sum(array((magnitude * ma.divide(distx,distr)).filled(0.)))/masses[particle]
-            xacl[particle] += sum(dampingForcex)/masses[particle]
-            xacl[particle] += wallAclX
-#            xacl[particle] += wall1AclX
-#            xacl[particle] += wall2AclX
-#            xacl[particle] += wall3AclX
-            yacl[particle] = sum(array((magnitude * ma.divide(disty,distr)).filled(0.)))/masses[particle]
-            yacl[particle] += sum(dampingForcey)/masses[particle]
-            yacl[particle] += wallAclY
-#            yacl[particle] += wall1AclY
-#            yacl[particle] += wall2AclY
-#            yacl[particle] += wall3AclY
+            if abs(accelerationX) > self.FORCE_BOUND:
+                accelerationX = accelerationX/abs(accelerationX) * self.FORCE_BOUND
+            if abs(accelerationY) > self.FORCE_BOUND:
+                accelerationY = accelerationY/abs(accelerationY) * self.FORCE_BOUND
+                
+            xacl[particle] += accelerationX
+            yacl[particle] += accelerationY
+            
             zacl[particle] = sum(array((magnitude * ma.divide(distz,distr)).filled(0.)))/masses[particle]
             zacl[particle] += sum(dampingForcex)/masses[particle]
             yacl[particle] += -2.
-            #debug_here()
-             ###set floor particles to stationary states
-        #xacl[0:(self.c.floorSize+2*self.c.wallSize+2*self.c.slantSize)] = 0.
-        #yacl[0:(self.c.floorSize+2*self.c.wallSize+2*self.c.slantSize)] = 0.
+      
         
         zacl *= 0.
         #print self.c.particleFlux[self.c.integrationIteration]

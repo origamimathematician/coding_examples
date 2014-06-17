@@ -40,6 +40,7 @@ dt = 0.015 ### Time delta for each integration step
 initConditions = "square_lattice" #used for molecular dynamics
 num_frames = 100 #????????????????????????
 frameSkip = 3 # number of frames to skip per animation cycle
+saveFrame = False #perodically save frame snap shots
 neighborUpdateInterval = 1 # check this
 data = array([0,0]) #junk variable, let in so as not to break code
 count = 0 # frame count 
@@ -60,7 +61,10 @@ slantMultiplierY = 2*rad*sin(slantDegree)
 #values that represent a wall in the container using the standard
 # line equation ax+by+c = 0. Here the syntax of the list should be
 #   [a,b,c,(x-coordinate endpoints , y-coordinate endpoints) smallest to largest ]
-wallList = [[-1*sqrt(3),-1,20.,(0,10/sqrt(3),10,20)],[sqrt(3),-1,-7.,(17/sqrt(3),15.5,10,20)],[0.,1.,0.,(-20,35.5,0,0)],[sqrt(3),-1,0.,(0,10/sqrt(3),0,10)]]
+#wallList = [[-1*sqrt(3),-1,20.,(10/sqrt(3),0,10,20)],[sqrt(3),-1,-7.,(17/sqrt(3),27/sqrt(3),10,20)],[0.,1.,0.,(-20,35.5,0,0)],[sqrt(3),-1,0.,(0,10/sqrt(3),0,10)],[-1*sqrt(3),-1,27,(27/sqrt(3),17/sqrt(3),0,10)]]
+
+wallList = [[-1*sqrt(3),-1,20.,(10/sqrt(3),0,10,20)],[sqrt(3),-1,-7.,(17/sqrt(3),27/sqrt(3),10,20)],[0.,1.,0.,(-20,35.5,0,0)],[1.,0.,-3,(3,3,0,10)],[1,0,-12.5,(12.5,12.5,0,10)]]
+
 
 gamma = 20
 
@@ -151,9 +155,14 @@ if animate == True:
     ax.set_aspect('equal')
     ax.set_xlim((0,container.Lx))
     ax.set_ylim((0,container.Ly))
-    ax.plot([0,10/sqrt(3)],[20,10],'b-')
-    ax.plot([17/sqrt(3),27/sqrt(3)],[10,20],'b-')
-    ax.plot([0,10/sqrt(3)],[0,10],'b-')
+    for wall in wallList:
+        ax.plot([wall[3][0],wall[3][1]],[wall[3][2],wall[3][3]],'b-')
+#    ax.plot([0,10/sqrt(3)],[20,10],'b-')
+#    ax.plot([17/sqrt(3),27/sqrt(3)],[10,20],'b-')
+#    ax.plot([0,10/sqrt(3)],[0,10],'b-')
+#    ax.plot([17/sqrt(3),27/sqrt(3)],[10,0],'b-')
+    
+#    [-1*sqrt(3),-1,15.5,(15.5,17/sqrt(3),0,10)]
     
     def prettify_circle(e):
       color="lightsteelblue"
@@ -189,7 +198,7 @@ if animate == True:
               else:
                 setNeighbors.UpdateNeighbors(container,False,cutOff)
           integrator(force,container)
-	  if count % 200 == 0:
+	  if count % 200 == 0 and saveFrame:
 	    title("Frame: {}".format(count))
 	    savefig("hourglass_{}.pdf".format(count))
       for i in range(len(circles)):

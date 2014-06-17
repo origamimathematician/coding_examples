@@ -144,6 +144,28 @@ class Neighbors(DistMatrix):
                                         [distx**2 + disty**2 + distz**2 == 0])
         return distx, disty, distz, distr, relVelx, relVely, relVelz
     
+    def NeighborDistImpv(self, particleIdx, neighborList, container):
+        particle = particleIdx        
+        self.neighborList = neighborList
+        self.c = container
+        distx = self.c.xpos[particle] - self.c.xpos[neighborList]
+        disty = self.c.ypos[particle] - self.c.ypos[neighborList]
+        distz = self.c.zpos[particle] - self.c.zpos[neighborList]
+        relVelx = self.c.xvel[particle] - self.c.xvel[neighborList]
+        relVely = self.c.yvel[particle] - self.c.yvel[neighborList]
+        relVelz = self.c.zvel[particle] - self.c.zvel[neighborList]
+        
+        #this is always positive, will this create a problem???
+        #relVelVector = sqrt(relVelx**2 + relVely**2 + relVelz**2)
+        
+#        distx = self.CheckDist(distx, self.c.Lx)
+#        disty = self.CheckDist(disty, self.c.Ly)
+#        distz = self.CheckDist(distz, self.c.Lz)
+        
+        distr = ma.masked_array(sqrt(distx**2 + disty**2 + distz**2),
+                                        [distx**2 + disty**2 + distz**2 == 0])
+        return distx, disty, distz, distr, relVelx, relVely, relVelz
+    
     def lineDist(self,a,b,c,x,y):
         distFromLine = abs(a*x+b*y+c)/sqrt(a**2+b**2)
         xdist = 0.

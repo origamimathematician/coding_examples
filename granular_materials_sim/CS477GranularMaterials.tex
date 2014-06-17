@@ -1,0 +1,151 @@
+\documentclass{article}%You can define the type of paper here.
+%%Useful packages that I commonly use.
+\usepackage[numbers]{natbib}%Bibliography package (help at http://merkel.zoneo.net/Latex/natbib.php).
+\usepackage{url}%Package to highlight url.
+\usepackage{times}%Sets font to be times.
+\usepackage{alltt}%Allows the use of verbatim (good for printing out code).
+\usepackage{graphicx}%Used to import images.
+\usepackage{amsmath, amssymb, amscd}%Contains the AMS expanded math symbols library.
+%%For those who want smaller margins, you can use this:
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+\usepackage[font={footnotesize}]{caption}
+\usepackage{subfigure}
+\newcommand{\tab} {\hspace{5mm}}
+
+\begin{document}
+
+%%Title
+\title{Simulation and Modeling\\Project II: Granular Materials}
+\author{Nathan Sponberg}
+\maketitle
+
+%%Makes the paper use two collums
+\twocolumn
+
+%%Introduction-------------------------------------------------------------------------------------
+\section{Introduction}
+\tab In this project we explore the dynamic interaction of granular matter flowing through a narrow opening. This is similar to sand flowing through an hourglass, where the narrow middle of the hourglass is the opening in question. In particular we will consider the rate of flow of the material through the "hourglass" as time progresses. We find that the rate of flow of material through the opening is relatively constant, irregardless of the amount of matter remaining above the opening. This may be somewhat counter intuitive at first glance. We might expect that a large mass of granular material above the opening would exert a large down force, thus speeding up the flow of material. However, this turns out not to be the case.
+
+	We will attempt to verify that much of the material above the opening gets "clogged" in the wider space above the narrow opening (\textit{Fig.1}). This creates "bridges" of forces across the particles from one wall to the other. These bridges then exert an upward force on the particles above them such that they are blocked from pushing downwards on the particles near the opening (which would cause the rate of flow to increase). %%Method--------------------------------------------------------------
+\section{Method}
+\tab In order to model the behavior of granular materials flowing through a narrow opening, we used a simplified model based off of the theory laid out in Cundall and Strack's paper "A Discrete Numerical Model for Granular Assemblies."$^1$ We have forgone some components of Cundall and Strack's method for calculating inter particle interactions and forces in favor of a simplified model. Unlike Cundall and Strack, we leave out the calculation of particle rotation and the shearing forces that arise from the angular momentum of two particles that come into contact. Instead we use use a two part method for calculating how particles interact with one another.
+	
+	The first step in this calculation is modeling particle collisions and the repulsive forces that arise from such interactions. In order to model this we simply use a modified Lennard-Jones potential between the particles. The Lennard-Jones potential is given by
+	
+\begin{align}
+	U(r) = 4\epsilon[(\sigma/r)^{12} - (\sigma/r)^6]
+\end{align}
+
+where $r$ is the distance between two particles, $\sigma$ is the distance at which the potential energy between particles is zero and $\epsilon$ is the binding energy between two atoms at a distance of $2^{(1/6)}\sigma$. To calculate the force between particles due to this potential we use
+
+
+
+
+\begin{align}
+	\vec{f}(r) = (-24\epsilon/r)[2(\sigma/r)^{12} - (\sigma/r)^6]\hat{r}
+\end{align}
+
+where $\vec{f}$ is a force vector along the axis of displacement $\hat{r}$, between the to particles.
+
+\begin{figure}[t]
+	\centering
+		\includegraphics[width=0.48\textwidth]{hourGlassSnapShop300.png}
+	\label{fig:fig01} 
+	\caption{A snap shot of the "hourglass" shortly after the simulation has begun. The particles are under a simulated "gravitational" force that constantly accelerates them downward (negative y-direction). The blue lines represent the walls of the "hourglass" and the green circles are the granular particles. We can see where the particles are beginning to jam up above the opening, thus impeding the flow of the particles higher up in the "hourglass".} 
+	
+\end{figure}
+
+ However, in our simulation we only calculate this potential between particles when they are in direct contact, or slightly overlapping. In our simulation, all particles had a uniform diameter of $2^{(1/6)}\sigma$. This means that when the particles are in contact the attractive Lennard-Jones force, which is proportional to $(\sigma/r)^6$ from equation (2), is minimized. Thus, only the strong repulsive force in accounted for. This leads to "springy" elastic collisions between particles.
+ 
+ The second step in calculating particles interactions is a "damping" force that models the dissipation of energy in the system when particles collide. This is where our model parallels Cundall and Strack's method. We use a similar calculation, but leave out the rotational considerations. Given two particles $i$ and $j$, the magnitude of this "damping" force between them is given by
+
+
+ 
+\begin{align}
+	f_{ij} = -\gamma(v_{ij}\cdot r_{ij})\frac{r_{ij}}{r_{ij}^2}\,.
+\end{align}
+
+Here $\gamma$ is the damping coefficient (determines the "stickiness" of the particles, ours was set to $\gamma = 30$), $v_{ij}$ is a vector equal to the relative velocities of the particles to one another and $r_{ij}$ is a vector equal to the relative displacement between the particles. Again, this force is only calculated when the particles are in contact or slightly overlapping.
+
+	Note that the walls of the "hourglass", see \textit{Fig. 1}, can be treated as large, oblong, immobile particles. During the simulation, for each particle, we check to see if the distance from the wall is less than or equal one particle diameter (i.e., is the particle in contact with the wall). If this is the case then we simply calculate the Lennard-Jones force between the wall and the particle as if the wall where an immobile particle itself.
+
+	This leads us to one final important consideration for our simulation. Since these forces are only calculated when particles are in contact, we need to store a list of neighbors for each particles. Every time we iterate the system, we check to see what particles each individual particle is touching. This is used to generate the neighbor list and the forces are then only calculated between each particle and its neighbors.
+
+
+
+
+
+%%Verification------------------------------------------------------------------------------------
+\section{Verification of Program}
+
+\tab The program behaves as expected. Jams repeatedly form as the simulation progresses and the rate of flow of the particles through the opening seems to be fairly constant \textit{(Fig. 2)}. Note that in the graph, while the particle flux varies from 0 to 4 over the course of the simulation, the variations appear to be quite uniform. There are about the same number of peaks and dips in the flux at both the beginning and end of the simulation. Thus the behavior of the particle flow is consistent regardless of the number of particles that remain above the opening. Hence the simulation behaves as we observe an actual hourglass to behave.
+
+
+Code for the full implementation can be found at:
+
+\noindent\url{https://github.com/kjoyce/csci577_s}
+
+\noindent\url{imulation/tree/master/nate_project2}
+
+\noindent\url{_hourglass}
+
+\begin{figure}[t]
+	\centering
+		\includegraphics[width=0.48\textwidth]{fluxPlot_1500Iterations.png}
+	\label{fig:fig01} 
+	\caption{A plot of the approximate flux of particles passing through the opening of the hourglass. A window of height 2, below the opening of the hourglass, was used to calculate the flow of particles. The graph shows how many particles where in this window at each time step.} 
+	
+\end{figure}
+
+%%Data & Analysis----------------------------------------------------
+\section{Data and Analysis}
+
+
+
+
+\tab In order to see how the particles in the simulation where interacting with each other on a larger scale we generated snap shots of the forces in the system at regular time intervals. At each time interval, we segmented the hourglass by intervals of its height, with each interval being one unit tall. Then in each of these windows of height, we calculated the average force that the particles where experiencing in the $x$ and $y$ directions \textit{(Fig. 3a)}. As we can see, at a certain point above the opening we see a peak in the $x$ and $y$ forces, with the particles above the point experiencing an average force "upwards". 
+
+	This confirms our hypothesis that there is some sort of bridge forming within the particles that blocks the downward force from much of the material above the opening. 
+%%--------------------------------------------------------
+\begin{figure}[h]
+\centering
+ \subfigure[Average Force vs. Height]{
+  \includegraphics[scale=.4]{component_slice_forces_700.png}
+   \label{fig:subfig1}
+   }
+  \subfigure[Snap Shot at Time Step 700]{
+  \includegraphics[scale=.25]{hourGlassSnapShop700.png}
+   \label{fig:subfig2}
+   }
+	\caption{Figure (a) shows plots of the average force in the x and y direction of the particles in specific areas of the simulation. Each point on the x-axis of the plot, corresponds to a window of height 1 starting at the height specified by the x coordinate on the plot. So the point at $x = 13$ on the plot, corresponds to a window from a height of 13 to a height of 14 on the hour glass simulation. Figure (b) is a snap shot of the hourglass at the same time step that the plots where generated.} 	 
+\end{figure}
+%%--------------------------------------------------------------
+We can see in the snap shot that a jam is forming around a height of 13 in the hourglass. This corresponds to the position at which the average $y$ force is in the positive direction.
+	
+	This behavior was consistent through out the simulation for the most part. There where a few snap shots that showed no areas of average positive force in the $y$ direction. However these where probably captured at a point where a "bridge" was breaking and then reforming else where. We can see that overall, that there is a large number of these occurrences of average positive force in the $y$ direction over the course of the simulation \textit{(Fig. 4)}. The largest number of these appear to occur fairly close to the opening (or are consistently occurring here).
+	
+\begin{figure}[h]
+	\centering
+		\includegraphics[width=0.48\textwidth]{histographNetPositiveForce_1500Iterations.png}
+	\label{fig:fig01} 
+	\caption{Histogram showing the total number of occurrences of average positive force in the $y$ direction for each height interval over the course of the entire simulation.} 
+	
+\end{figure}
+
+	It is difficult to gauge exactly how the system is behaving in a dynamic way. Using these snap shots probably does not provide the most comprehensive view of the system as a whole. The histogram \textit{(Fig. 4)}, lends some weight to the assumption that the behavior is consistent over the whole simulation. We see that there seems to a "bridging" effect at some point in time, at every different height (of course this trails off at higher positions as particles empty from the hourglass). However a dynamic plot that showed the times at which these peaks in average positive upwards force, might prove to be more elucidating.
+
+%%Interpretation---------------------------------------------------------------------
+\section{Interpretation}
+
+\tab This simulation and the data we have gathered definitely provide a lot of evidence to confirm our hypothesis. That being said, at this point further and more rigorous analysis would be necessary to uncover more detailed behavior of the system. There certainly seems to be some sort of "bridging" effect occurring between the particles, but it is not yet clear how exactly this happens in a dynamic fashion. When there are many particles in the hourglass are there multiple bridges forming, all stacked on top of one another? Or is there more of a lattice of interconnected forces through out the majority of the particles? How consistent is this behavior when other variables are thrown into the mix such as larger numbers of particles or varying opening widths? These questions should inform and guide any further investigation into these systems.
+	
+	Given more time, it would be useful to explore a few other avenues of investigation with this system. Of course varying the width of the opening and the number of particles to check and see of the rate of flow was consistent over a larger number of variations in the system would be necessary. With a very large number of particles, we would expect the rate of flow to approach a very constant rate. As a way to obtain a glimpse to the dynamic behavior of the forces between the particles, a relatively simple addition to the visualization could be implemented. By graphing the normalized force vector of each particle over the particle itself, in real time, we could potentially see the bridges forming and breaking overtime. This would also allow us to visualize the overall structure of these forces all at once. This addition to the simulation might prove to be the most illuminating.
+	
+
+%%Bibliography-----------------------------------------------------------------------
+\begin{thebibliography}{1}
+	\bibitem{1} Cundall, P. A., \& Strack, O. D. L. \textit{A Discrete Numerical Model for Granular Assemblies.}Geotechnique 29, No. 1, 47-65 (1979).
+\end{thebibliography} 
+
+
+\end{document}
